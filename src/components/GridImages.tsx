@@ -5,6 +5,8 @@ import {
   ImageListItem,
   ImageListItemBar,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import { CommonResponse } from '../utils/normalizeResponses';
@@ -14,6 +16,10 @@ type GridImagesProps = {
 };
 
 const GridImages: React.FC<GridImagesProps> = ({ imagesData }) => {
+  const theme = useTheme();
+  const isSmallDevice = useMediaQuery(theme.breakpoints.down('sm'));
+  console.log(isSmallDevice);
+
   if (imagesData === null) {
     return (
       <Typography mt={2} color="info" variant="body2" textAlign="center">
@@ -24,7 +30,7 @@ const GridImages: React.FC<GridImagesProps> = ({ imagesData }) => {
 
   return (
     <Container sx={{ mt: 10 }}>
-      <ImageList cols={3} gap={15}>
+      <ImageList cols={isSmallDevice ? 1 : 3} gap={15}>
         {imagesData?.images.map((image, index) => (
           <ImageListItem key={index}>
             <img
