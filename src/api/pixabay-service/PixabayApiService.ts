@@ -11,9 +11,7 @@ class PixabayApiService {
 
   private getUrl(queryParams: Record<string, string> = {}): string {
     const query = new URLSearchParams(queryParams).toString();
-    console.log(query);
-    console.log(`${this.baseUrl}/?key=${this.apiKey}&${query}}`);
-    return `${this.baseUrl}/?key=${this.apiKey}&${query}=${this.apiKey}`;
+    return `${this.baseUrl}/?key=${this.apiKey}&${query}`;
   }
 
   public async getImageByCategory(category: string | undefined): Promise<PixabayResponse> {
@@ -25,6 +23,7 @@ class PixabayApiService {
 
     try {
       const response = await fetch(url);
+      console.log(url);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
