@@ -58,7 +58,7 @@ function App() {
 
   return (
     <>
-      <Box component="main" sx={{ maxWidth: 400, mx: 'auto', mt: 30 }}>
+      <Box component="main" sx={{ maxWidth: 400, mx: 'auto', mt: 30, px: 1 }}>
         <Typography component="h1" variant="h3" gutterBottom textAlign="center">
           Photo Search
         </Typography>
