@@ -1,32 +1,59 @@
-import { Box, Button, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import PixabayApiService from './api/pixabay-service/PixabayApiService';
 import PixabayResponse from './api/pixabay-service/PixabayResponse';
 import GridImages from './components/GridImages';
+import PexelsApiService from './api/pexels-service/PexelsApiService';
+import PexelsResponse from './api/pexels-service/PexelsResponse';
+import {
+  CommonResponse,
+  normalizePexelsResponse,
+  normalizePixabayResponse,
+} from './utils/normalizeResponses';
 
 function App() {
   const [category, setCategory] = useState('');
-  const [pixabayData, setPixabayData] = useState<PixabayResponse | null>(null);
+  const [source, setSource] = useState('Pixbay');
+  const [imagesData, setImagesData] = useState<CommonResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCategory(event.target.value);
   };
 
+  const handleSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSource(event.target.value as string);
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (pixabayData !== null) {
-      setPixabayData(null);
+    if (imagesData !== null) {
+      setImagesData(null);
     }
 
-    const fetchWeatherImage = async () => {
+    const fetchImagesData = async () => {
+      setIsLoading(true);
       const pixabayService = new PixabayApiService();
-      const pixabayData: PixabayResponse = await pixabayService.getImageByCategory(category);
-      console.log(`category: ${category}`);
-      setPixabayData(pixabayData);
+      const pexelsService = new PexelsApiService();
+      try {
+        let commonResponse: CommonResponse = { images: [] };
+        if (source === 'Pixbay') {
+          const pixabayData: PixabayResponse = await pixabayService.getImageByCategory(category);
+          commonResponse = normalizePixabayResponse(pixabayData);
+        } else if (source === 'Pexels') {
+          const pexelsData: PexelsResponse = await pexelsService.getImageByCategory(category);
+          commonResponse = normalizePexelsResponse(pexelsData);
+        }
+        setImagesData(commonResponse);
+      } catch (error) {
+        console.error('Failed to fetch images:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchWeatherImage();
+    fetchImagesData();
   };
 
   return (
@@ -36,9 +63,16 @@ function App() {
           Photo Search
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off">
-          <TextField select label="Select source" fullWidth sx={{ mb: 2 }}>
-            <MenuItem value="Pexels">Pexels</MenuItem>
+          <TextField
+            select
+            value={source}
+            label="Select source"
+            fullWidth
+            sx={{ mb: 2 }}
+            onChange={handleSelect}
+          >
             <MenuItem value="Pixbay">Pixbay</MenuItem>
+            <MenuItem value="Pexels">Pexels</MenuItem>
           </TextField>
           <TextField
             sx={{ mb: 2 }}
@@ -57,7 +91,13 @@ function App() {
           ></Button>
         </Box>
       </Box>
-      <GridImages pixabayData={pixabayData} />
+      {isLoading ? (
+        <Box sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', mt: 5 }}>
+          <CircularProgress size={50} />
+        </Box>
+      ) : (
+        <GridImages imagesData={imagesData} />
+      )}
     </>
   );
 }
